@@ -1,6 +1,7 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
+
 const gltfLoader = new GLTFLoader();
 
 const scene = new THREE.Scene();
@@ -24,7 +25,6 @@ class Box extends THREE.Mesh {
     position = { x: 0, y: 0, z: 0 },
     Zacc = false,
   }) {
-    console.log(color);
     super(
       new THREE.BoxGeometry(width, height, depth),
       new THREE.MeshStandardMaterial({ color: color })
@@ -43,13 +43,17 @@ class Box extends THREE.Mesh {
     this.Zacc = Zacc;
     this.velocity = velocity;
   }
-  update(ground) {
+  update(ground, index) {
     this.updateSides();
     this.applyGravity(ground);
     if (this.Zacc) {
       this.velocity.z += 0.001;
     }
     this.position.z += this.velocity.z;
+    if (this.position.z > ground.front - 5) {
+      scene.remove(this);
+      enemies.splice(index, 1);
+    }
     this.position.x += this.velocity.x;
   }
   updateSides() {
@@ -61,7 +65,6 @@ class Box extends THREE.Mesh {
     this.back = this.position.z - this.depth / 2;
   }
   applyGravity(ground) {
-    // console.log(this.boxCollision({ box1: this, box2: ground }));
     this.velocity.y += -this.gravity;
     if (boxCollision({ box1: this, box2: ground })) {
       this.velocity.y = this.velocity.y * 0.8;
@@ -86,7 +89,6 @@ renderer.shadowMap.enabled = true;
 
 renderer.setPixelRatio(devicePixelRatio);
 // LIGHT
-console.log(new OrbitControls(camera, renderer.domElement));
 const light = new THREE.DirectionalLight(0xffffff, 4);
 light.position.set(0, 5, 1);
 light.castShadow = true;
@@ -159,7 +161,6 @@ window.addEventListener("keydown", (event) => {
 window.addEventListener("keyup", (event) => {
   switch (event.code) {
     case "KeyA":
-      console.log();
       keys.a.pressed = false;
       break;
     case "KeyD":
@@ -175,60 +176,57 @@ window.addEventListener("keyup", (event) => {
       keys.space.pressed = false;
   }
 });
+function loadTree(x, z) {
+  return new Promise((resolve, reject) => {
+    gltfLoader.load(
+      "./Assets/minecraft_tree/scene.gltf",
+      function (gltf) {
+        const tree = gltf.scene;
+        tree.scale.set(1, 4, 1);
+        tree.position.set(x, -4, z);
+        scene.add(tree);
+        resolve(tree); // Resolve the promise with the loaded tree object
+      },
+      undefined,
+      function (error) {
+        console.error(error);
+        reject(error); // Reject the promise if there's an error
+      }
+    );
+  });
+}
 
 const enemies = [];
 let spawnRate = 100;
 let frame = 0;
+const treesRight = [];
 const treesLeft = [];
 for (let i = 0; i < 5; i++) {
-  gltfLoader.load(
-    "./Assets/minecraft_tree/scene.gltf",
-    function (gltf) {
-      const tree = gltf.scene;
-      tree.scale.set(1, 4, 1);
-      tree.position.set(
-        -5 - 0.5 * Math.random(),
-        -4,
-        -i * 5 * Math.random() - 1
-      );
+  loadTree(-5 - 0.5 * Math.random(), -i * 5 * Math.random() - 1)
+    .then((tree) => {
       treesLeft.push(tree);
-      scene.add(tree);
-    },
-    undefined,
-    function (error) {
-      console.error(error);
-    }
-  );
-}
-const treesRight = [];
-for (let i = 0; i < 5; i++) {
-  gltfLoader.load(
-    "./Assets/minecraft_tree/scene.gltf",
-    function (gltf) {
-      const tree = gltf.scene;
-      tree.scale.set(1, 4, 1);
-      tree.position.set(
-        5 + 0.5 * Math.random(),
-        -4,
-        -i * 5 * Math.random() - 1
-      );
+    })
+    .catch((err) => {
+      console.log(err);
+    });
+
+  loadTree(5 + 0.5 * Math.random(), -i * 5 * Math.random() - 1)
+    .then((tree) => {
       treesRight.push(tree);
-      scene.add(tree);
-    },
-    undefined,
-    function (error) {
-      console.error(error);
-    }
-  );
+    })
+    .catch((err) => {
+      console.log(err);
+    });
 }
+console.log(treesLeft);
 function animate() {
   const animationId = requestAnimationFrame(animate);
   cubeMesh.velocity.x = 0;
   cubeMesh.velocity.z = 0;
   frame++;
   if (frame % spawnRate == 0) {
-    if (spawnRate > 20) {
-      spawnRate -= 20;
+    if (spawnRate > 10) {
+      spawnRate -= 10;
     }
 
     const enemy = new Box({
@@ -248,50 +246,44 @@ function animate() {
     scene.add(enemy);
     enemies.push(enemy);
   }
-  enemies.forEach((enemy) => {
-    enemy.update(planeMesh);
+  enemies.forEach((enemy, index) => {
+    enemy.update(planeMesh, index);
     if (boxCollision({ box1: cubeMesh, box2: enemy })) {
       cancelAnimationFrame(animationId);
     }
   });
   if (frame % 30 == 0) {
-    if (treeVelocity < 0.1) treeVelocity += 0.005;
+    treeVelocity += 0.015;
 
-    console.log("scsij");
-    gltfLoader.load(
-      "./Assets/minecraft_tree/scene.gltf",
-      function (gltf) {
-        const tree = gltf.scene;
-        tree.scale.set(1, 4, 1);
-        tree.position.set(5 + 0.5 * Math.random(), -4, Math.random() * 4 - 20);
-        treesRight.push(tree);
-        scene.add(tree);
-      },
-      undefined,
-      function (error) {
-        console.error(error);
-      }
-    );
-    gltfLoader.load(
-      "./Assets/minecraft_tree/scene.gltf",
-      function (gltf) {
-        const tree = gltf.scene;
-        tree.scale.set(1, 4, 1);
-        tree.position.set(-5 - 0.5 * Math.random(), -4, Math.random() * 4 - 20);
+    loadTree(-5 - 0.5 * Math.random(), Math.random() * 4 - 20)
+      .then((tree) => {
         treesLeft.push(tree);
-        scene.add(tree);
-      },
-      undefined,
-      function (error) {
-        console.error(error);
-      }
-    );
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+
+    loadTree(5 + 0.5 * Math.random(), Math.random() * 4 - 20)
+      .then((tree) => {
+        treesRight.push(tree);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
   }
-  treesLeft.forEach((tree) => {
+  treesLeft.forEach((tree, index) => {
     tree.position.z += treeVelocity;
+    if (tree.position.z > planeMesh.front - 5) {
+      scene.remove(tree);
+      treesLeft.splice(index, 1);
+    }
   });
-  treesRight.forEach((tree) => {
+  treesRight.forEach((tree, index) => {
     tree.position.z += treeVelocity;
+    if (tree.position.z > planeMesh.front - 5) {
+      scene.remove(tree);
+      treesRight.splice(index, 1);
+    }
   });
   if (keys.a.pressed) {
     cubeMesh.velocity.x = -0.1;
@@ -305,9 +297,10 @@ function animate() {
   if (keys.space.pressed) {
     cubeMesh.velocity.y = 0.15;
   }
-
   cubeMesh.update(planeMesh);
   renderer.render(scene, camera);
 }
 animate();
 document.body.appendChild(renderer.domElement);
+
+new OrbitControls(camera, renderer.domElement);
