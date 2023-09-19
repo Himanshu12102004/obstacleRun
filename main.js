@@ -313,6 +313,7 @@ function init() {
       .catch((err) => {
         console.log(err);
       });
+    renderer.render(scene, camera);
   }
   // console.log(lasr)
   if (!firstGame) {
