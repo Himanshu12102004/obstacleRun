@@ -8,6 +8,7 @@ const gltfLoader = new GLTFLoader();
 let lastTree;
 let cubeMesh;
 let enemyAcc;
+let treeModel;
 let myTime = {
   second: 0,
   centi: 0,
@@ -219,15 +220,13 @@ window.addEventListener("keyup", (event) => {
     //   keys.space.pressed = false;
   }
 });
-function loadTree(x, z) {
+function loadTree() {
   return new Promise((resolve, reject) => {
     gltfLoader.load(
       "./Assets/tree/scene.gltf",
       function (gltf) {
         const tree = gltf.scene;
         tree.scale.set(1, 1, 1);
-        tree.position.set(x, 2, z);
-        scene.add(tree);
         resolve(tree); // Resolve the promise with the loaded tree object
       },
       undefined,
@@ -238,7 +237,23 @@ function loadTree(x, z) {
     );
   });
 }
+loadTree()
+  .then((tree) => {
+    treeModel = tree;
+    init();
 
+    console.log(treeModel);
+  })
+  .catch((err) => {
+    console.log(err);
+  });
+function makeTrees(x, z) {
+  return new Promise((resolve, reject) => {
+    let tree = treeModel.clone();
+    tree.position.set(x, 2, z);
+    resolve(tree);
+  });
+}
 let enemies = [];
 let spawnRate = 100;
 let frame = 0;
@@ -277,17 +292,19 @@ function init() {
   });
   cubeMesh.castShadow = true;
   scene.add(cubeMesh);
+
   for (let i = 0; i < 15; i++) {
-    loadTree(-5.5 - 0.5, -i * 5 + planeMesh.front)
+    makeTrees(-5.5 - 0.5, -i * 5 + planeMesh.front)
       .then((tree) => {
         scene.add(tree);
         treesLeft.push(tree);
         lastTree = tree;
+        renderer.render(scene, camera);
       })
       .catch((err) => {
         console.log(err);
       });
-    loadTree(5.5 + 0.5, -i * 5 + planeMesh.front)
+    makeTrees(5.5 + 0.5, -i * 5 + planeMesh.front)
       .then((tree) => {
         scene.add(tree);
         treesRight.push(tree);
@@ -363,8 +380,10 @@ function animate() {
     if (treeSpawnRate > 5) treeSpawnRate - 1;
     if (treeVelocity < 2) treeVelocity += 0.008;
 
-    loadTree(-5.5 - 0.5, -35)
+    makeTrees(-5.5 - 0.5, -35)
       .then((tree) => {
+        scene.add(tree);
+
         treesLeft.push(tree);
         lastTree = tree;
       })
@@ -372,8 +391,10 @@ function animate() {
         console.log(err);
       });
 
-    loadTree(5.5 + 0.5, -35)
+    makeTrees(5.5 + 0.5, -35)
       .then((tree) => {
+        scene.add(tree);
+
         treesRight.push(tree);
       })
       .catch((err) => {
@@ -410,8 +431,5 @@ function animate() {
   renderer.render(scene, camera);
 }
 document.body.appendChild(renderer.domElement);
-if (firstGame) {
-  init();
-  gameStart = true;
-}
+
 new OrbitControls(camera, renderer.domElement);
