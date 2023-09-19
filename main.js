@@ -1,20 +1,72 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
-
+let firstGame = true;
+let treeVelocity;
+let treeSpawnRate;
 const gltfLoader = new GLTFLoader();
+let lastTree;
+let cubeMesh;
+let enemyAcc;
+let myTime = {
+  second: 0,
+  centi: 0,
+};
+// Create an Audio object
+const audio = new Audio("./Assets/backGroundMusic.mp3");
+let timerId;
+function timer() {
+  timerId = setInterval(() => {
+    document.querySelector(".centi").innerHTML = myTime.centi
+      .toString()
+      .padStart(2, "0");
+    myTime.centi++;
+    if (myTime.centi > 99) {
+      myTime.second++;
+      myTime.centi = 0;
+      document.querySelector(".seconds").innerHTML =
+        myTime.second.toString().padStart(2, "0") + "s";
+    }
+  }, 10);
+}
+// Function to play the audio in a loop
+function playAudioLoop() {
+  audio
+    .play()
+    .then(() => {
+      // Audio started playing
+      console.log("Audio started playing");
+    })
+    .catch((error) => {
+      // Handle any errors
+      console.error("Error playing audio:", error);
+    });
+
+  // Listen for the "ended" event to restart the audio
+  audio.addEventListener("ended", () => {
+    audio.currentTime = 0; // Reset to the beginning
+    audio.play(); // Play again
+  });
+}
+let gameStart = false;
+// Start playing the audio in a loop
+
+addEventListener("keydown", () => {
+  if (!gameStart) {
+    init();
+    gameStart = true;
+    document.querySelector(".press").style.display = "none";
+  }
+});
 
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(
-  75,
+  60,
   innerWidth / innerHeight,
   0.1,
   1000
 );
-let treeVelocity = 0.01;
 
-camera.position.set(0, 0.1, 1);
-// camera.lookAt(0, 0, 0);
 class Box extends THREE.Mesh {
   constructor({
     width,
@@ -47,10 +99,10 @@ class Box extends THREE.Mesh {
     this.updateSides();
     this.applyGravity(ground);
     if (this.Zacc) {
-      this.velocity.z += 0.001;
+      this.velocity.z += enemyAcc;
     }
     this.position.z += this.velocity.z;
-    if (this.position.z > ground.front - 5) {
+    if (this.position.z > ground.front) {
       scene.remove(this);
       enemies.splice(index, 1);
     }
@@ -95,17 +147,6 @@ light.castShadow = true;
 
 scene.add(light);
 // CUBE
-const cubeMesh = new Box({
-  height: 1,
-  width: 1,
-  depth: 1,
-  color: 0x00ff00,
-  velocity: { x: 0, y: -0.01, z: 0 },
-  position: { x: 2, y: 0, z: 0 },
-});
-cubeMesh.castShadow = true;
-scene.add(cubeMesh);
-//PLANE
 
 const planeMesh = new Box({
   height: 0.5,
@@ -116,11 +157,13 @@ const planeMesh = new Box({
 });
 planeMesh.receiveShadow = true;
 scene.add(planeMesh);
-camera;
-camera.position.z = 5;
+
+//PLANE
+
 // camera.position.y = 1;
-let velocity = 0;
-renderer.render(scene, camera);
+camera.position.set(0, 1.5, planeMesh.front + 5);
+camera.lookAt(0, -1.25, planeMesh.front);
+
 const keys = {
   a: {
     pressed: false,
@@ -147,15 +190,15 @@ window.addEventListener("keydown", (event) => {
     case "KeyD":
       keys.d.pressed = true;
       break;
-    case "KeyW":
-      keys.w.pressed = true;
-      break;
-    case "KeyS":
-      keys.s.pressed = true;
-      break;
+    // case "KeyW":
+    //   keys.w.pressed = true;
+    //   break;
+    // case "KeyS":
+    //   keys.s.pressed = true;
+    //   break;
 
-    case "Space":
-      keys.space.pressed = true;
+    // case "Space":
+    //   keys.space.pressed = true;
   }
 });
 window.addEventListener("keyup", (event) => {
@@ -166,24 +209,24 @@ window.addEventListener("keyup", (event) => {
     case "KeyD":
       keys.d.pressed = false;
       break;
-    case "KeyW":
-      keys.w.pressed = false;
-      break;
-    case "KeyS":
-      keys.s.pressed = false;
-      break;
-    case "Space":
-      keys.space.pressed = false;
+    // case "KeyW":
+    //   keys.w.pressed = false;
+
+    // case "KeyS":
+    //   keys.s.pressed = false;
+
+    // case "Space":
+    //   keys.space.pressed = false;
   }
 });
 function loadTree(x, z) {
   return new Promise((resolve, reject) => {
     gltfLoader.load(
-      "./Assets/minecraft_tree/scene.gltf",
+      "./Assets/tree/scene.gltf",
       function (gltf) {
         const tree = gltf.scene;
-        tree.scale.set(1, 4, 1);
-        tree.position.set(x, -4, z);
+        tree.scale.set(1, 1, 1);
+        tree.position.set(x, 2, z);
         scene.add(tree);
         resolve(tree); // Resolve the promise with the loaded tree object
       },
@@ -196,39 +239,96 @@ function loadTree(x, z) {
   });
 }
 
-const enemies = [];
+let enemies = [];
 let spawnRate = 100;
 let frame = 0;
-const treesRight = [];
-const treesLeft = [];
-for (let i = 0; i < 5; i++) {
-  loadTree(-5 - 0.5 * Math.random(), -i * 5 * Math.random() - 1)
-    .then((tree) => {
-      treesLeft.push(tree);
-    })
-    .catch((err) => {
-      console.log(err);
-    });
+let treesRight = [];
+let treesLeft = [];
+function init() {
+  myTime.centi = 0;
+  myTime.second = 0;
+  document.querySelector(".centi").innerHTML = "00";
 
-  loadTree(5 + 0.5 * Math.random(), -i * 5 * Math.random() - 1)
-    .then((tree) => {
-      treesRight.push(tree);
-    })
-    .catch((err) => {
-      console.log(err);
+  document.querySelector(".seconds").innerHTML = "00s";
+
+  if (!firstGame) {
+    timer();
+  }
+
+  spawnRate = 100;
+  treeVelocity = 0.07;
+  treeSpawnRate = 20;
+  enemyAcc = 0.001;
+  enemies = [];
+  treesLeft = [];
+  treesRight = [];
+  const length = scene.children.length;
+  for (let i = length - 1; i > 2; i--) {
+    console.log(scene.children);
+    scene.remove(scene.children[i]);
+  }
+  cubeMesh = new Box({
+    height: 1,
+    width: 1,
+    depth: 1,
+    color: 0x00ff00,
+    velocity: { x: 0, y: -0.01, z: 0 },
+    position: { x: 0, y: -1.25, z: planeMesh.front - 2 },
+  });
+  cubeMesh.castShadow = true;
+  scene.add(cubeMesh);
+  for (let i = 0; i < 15; i++) {
+    loadTree(-5.5 - 0.5, -i * 5 + planeMesh.front)
+      .then((tree) => {
+        scene.add(tree);
+        treesLeft.push(tree);
+        lastTree = tree;
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+    loadTree(5.5 + 0.5, -i * 5 + planeMesh.front)
+      .then((tree) => {
+        scene.add(tree);
+        treesRight.push(tree);
+        renderer.render(scene, camera);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  }
+  // console.log(lasr)
+  if (!firstGame) {
+    animate();
+  } else {
+    addEventListener("keydown", () => {
+      console.log("xygxuagx");
+      if (firstGame) {
+        animate();
+        timer();
+        playAudioLoop();
+        document.querySelector(".press").style.display = "none";
+        firstGame = false;
+      }
     });
+  }
 }
-console.log(treesLeft);
+
 function animate() {
+  if (frame % 100 === 0) {
+    enemyAcc += 0.0008;
+    treeVelocity += 0.003;
+  }
+  console.log("fdud");
   const animationId = requestAnimationFrame(animate);
+
   cubeMesh.velocity.x = 0;
   cubeMesh.velocity.z = 0;
   frame++;
   if (frame % spawnRate == 0) {
     if (spawnRate > 10) {
-      spawnRate -= 10;
+      spawnRate -= 2;
     }
-
     const enemy = new Box({
       height: 1,
       width: 1,
@@ -237,8 +337,8 @@ function animate() {
       velocity: { x: 0, y: 0, z: 0.001 },
       position: {
         x: (Math.random() - 0.5) * 10,
-        y: 0,
-        z: -Math.random() * 15 - 7,
+        y: 1,
+        z: Math.random() * planeMesh.back + 10 * Math.random(),
       },
       Zacc: true,
     });
@@ -250,20 +350,29 @@ function animate() {
     enemy.update(planeMesh, index);
     if (boxCollision({ box1: cubeMesh, box2: enemy })) {
       cancelAnimationFrame(animationId);
+      document.querySelector(".press").style.color = "red";
+      document.querySelector(".press").innerHTML =
+        "Game over.<br> press any key to restart";
+      document.querySelector(".press").style.display = "block";
+      clearInterval(timerId);
+
+      gameStart = false;
     }
   });
-  if (frame % 30 == 0) {
-    treeVelocity += 0.015;
+  if (lastTree && lastTree.position.z - planeMesh.back > 8) {
+    if (treeSpawnRate > 5) treeSpawnRate - 1;
+    if (treeVelocity < 2) treeVelocity += 0.008;
 
-    loadTree(-5 - 0.5 * Math.random(), Math.random() * 4 - 20)
+    loadTree(-5.5 - 0.5, -35)
       .then((tree) => {
         treesLeft.push(tree);
+        lastTree = tree;
       })
       .catch((err) => {
         console.log(err);
       });
 
-    loadTree(5 + 0.5 * Math.random(), Math.random() * 4 - 20)
+    loadTree(5.5 + 0.5, -35)
       .then((tree) => {
         treesRight.push(tree);
       })
@@ -273,26 +382,26 @@ function animate() {
   }
   treesLeft.forEach((tree, index) => {
     tree.position.z += treeVelocity;
-    if (tree.position.z > planeMesh.front - 5) {
+    if (tree.position.z > planeMesh.front + 2) {
       scene.remove(tree);
       treesLeft.splice(index, 1);
     }
   });
   treesRight.forEach((tree, index) => {
     tree.position.z += treeVelocity;
-    if (tree.position.z > planeMesh.front - 5) {
+    if (tree.position.z > planeMesh.front + 2) {
       scene.remove(tree);
       treesRight.splice(index, 1);
     }
   });
-  if (keys.a.pressed) {
-    cubeMesh.velocity.x = -0.1;
-  } else if (keys.d.pressed) {
-    cubeMesh.velocity.x = 0.1;
+  if (keys.a.pressed && cubeMesh.left > planeMesh.left) {
+    cubeMesh.velocity.x = -0.2;
+  } else if (keys.d.pressed && cubeMesh.right < planeMesh.right) {
+    cubeMesh.velocity.x = 0.2;
   } else if (keys.w.pressed) {
-    cubeMesh.velocity.z = -0.1;
+    cubeMesh.velocity.z = -0.2;
   } else if (keys.s.pressed) {
-    cubeMesh.velocity.z = 0.1;
+    cubeMesh.velocity.z = 0.2;
   }
   if (keys.space.pressed) {
     cubeMesh.velocity.y = 0.15;
@@ -300,7 +409,9 @@ function animate() {
   cubeMesh.update(planeMesh);
   renderer.render(scene, camera);
 }
-animate();
 document.body.appendChild(renderer.domElement);
-
+if (firstGame) {
+  init();
+  gameStart = true;
+}
 new OrbitControls(camera, renderer.domElement);

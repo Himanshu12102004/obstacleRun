@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <style>
-      * {
+      body {
         margin: 0;
         background-color: #0c4868;
       }
@@ -10,11 +10,62 @@
         position: absolute;
         top: 0;
       }
+      .press {
+        position: absolute;
+        top: 20%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-family: monospace;
+        z-index: 30;
+        font-size: 25px;
+        font-weight: 900;
+        max-width: 300px;
+        color: #00ff00;
+        text-align: center;
+        transform-origin: center;
+        animation: pressAnimator 1s infinite ease-in-out;
+      }
+      @keyframes pressAnimator {
+        0% {
+          transform: scale(1) translate(-50%, -50%);
+        }
+        50% {
+          transform: scale(1.01) translate(-50%, -50%);
+        }
+        100% {
+          transform: scale(1) translate(-50%, -50%);
+        }
+      }
+      .timer {
+        position: absolute;
+        top: 50px;
+        right: -25px;
+        display: flex;
+        transform: translate(-50%, -50%);
+        font-family: monospace;
+        z-index: 30;
+        font-size: 25px;
+        max-width: 300px;
+        color: #fff;
+        font-weight: 500;
+        gap: 10px;
+        text-align: center;
+        transform-origin: center;
+      }
     </style>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title class="name">Document</title>
   </head>
-  <body></body>
+  <body>
+    <div class="timer">
+      <div class="seconds">00s</div>
+      <div class="centi">00</div>
+    </div>
+    <div class="press">
+      Press any key to start. <br />
+      Use arrow keys to control
+    </div>
+  </body>
   <script type="module" src="./main.js"></script>
 </html>
