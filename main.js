@@ -240,6 +240,7 @@ function loadTree() {
 loadTree()
   .then((tree) => {
     treeModel = tree;
+    document.querySelector(".frosted").style.display = "none";
     init();
 
     console.log(treeModel);

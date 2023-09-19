@@ -52,6 +52,22 @@
         text-align: center;
         transform-origin: center;
       }
+      .frosted {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 100;
+        font-size: 30px;
+        font-family: monospace;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        backdrop-filter: blur(4px);
+        color: white;
+        background-color: rgba(69, 69, 69, 0.4);
+      }
     </style>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -66,6 +82,7 @@
       Press any key to start. <br />
       Use arrow keys to control
     </div>
+    <div class="frosted">Placing Objects...</div>
   </body>
   <script type="module" src="./main.js"></script>
 </html>
