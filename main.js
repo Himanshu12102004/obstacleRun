@@ -295,9 +295,11 @@ function init() {
   scene.add(cubeMesh);
 
   for (let i = 0; i < 15; i++) {
-    makeTrees(-5.5 - 0.5, -i * 5 + planeMesh.front)
+    makeTrees(planeMesh.left - 0.5, -i * 5 + planeMesh.front)
       .then((tree) => {
         scene.add(tree);
+        // tree.rotateY(Math.PI / 2);
+
         treesLeft.push(tree);
         lastTree = tree;
         renderer.render(scene, camera);
@@ -305,9 +307,10 @@ function init() {
       .catch((err) => {
         console.log(err);
       });
-    makeTrees(5.5 + 0.5, -i * 5 + planeMesh.front)
+    makeTrees(planeMesh.right + 0.5, -i * 5 + planeMesh.front)
       .then((tree) => {
         scene.add(tree);
+
         treesRight.push(tree);
         renderer.render(scene, camera);
       })
@@ -382,10 +385,10 @@ function animate() {
     if (treeSpawnRate > 5) treeSpawnRate - 1;
     if (treeVelocity < 2) treeVelocity += 0.008;
 
-    makeTrees(-5.5 - 0.5, -35)
+    makeTrees(planeMesh.left - 0.5, -35)
       .then((tree) => {
         scene.add(tree);
-
+        // tree.rotateY(Math.PI / 2);
         treesLeft.push(tree);
         lastTree = tree;
       })
@@ -393,7 +396,7 @@ function animate() {
         console.log(err);
       });
 
-    makeTrees(5.5 + 0.5, -35)
+    makeTrees(planeMesh.right + 0.5, -35)
       .then((tree) => {
         scene.add(tree);
 
