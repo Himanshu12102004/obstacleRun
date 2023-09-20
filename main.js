@@ -2,8 +2,8 @@ import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 let firstGame = true;
+let scale = { X: 1, Y: 1, Z: 1 };
 let treeVelocity;
-let treeSpawnRate;
 const gltfLoader = new GLTFLoader();
 let lastTree;
 let cubeMesh;
@@ -17,6 +17,14 @@ let myTime = {
   second: 0,
   centi: 0,
 };
+function isTouchDevice() {
+  return (
+    "ontouchstart" in window ||
+    navigator.maxTouchPoints > 0 ||
+    navigator.msMaxTouchPoints > 0
+  );
+}
+
 let highCentiDom = document.querySelector(".highCenti");
 let highSecondDom = document.querySelector(".highSeconds");
 if (localStorage.getItem("highCenti") && localStorage.getItem("highSeconds")) {
@@ -180,9 +188,9 @@ scene.add(light);
 // CUBE
 
 const planeMesh = new Box({
-  height: 0.5,
-  width: 10,
-  depth: 75,
+  height: 0.5 * scale.X,
+  width: 10 * scale.Y,
+  depth: 75 * scale.Z,
   color: 0x00369a1,
   position: { x: 0, y: -2, z: 0 },
 });
@@ -302,6 +310,13 @@ let frame = 0;
 let treesRight = [];
 let treesLeft = [];
 function init() {
+  if (isTouchDevice()) {
+    scale.X = 0.1;
+    scale.Y = 0.1;
+    scale.Z = 0.1;
+  } else {
+    console.log("This device does not have a touch screen.");
+  }
   myTime.centi = 0;
   myTime.second = 0;
   frame = 0;
@@ -315,7 +330,7 @@ function init() {
 
   spawnRate = 100;
   treeVelocity = 0.07;
-  treeSpawnRate = 20;
+
   enemyAcc = 0.001;
   enemies = [];
   treesLeft = [];
@@ -325,9 +340,9 @@ function init() {
     scene.remove(scene.children[i]);
   }
   cubeMesh = new Box({
-    height: 1,
-    width: 1,
-    depth: 1,
+    height: 1 * scale.X,
+    width: 1 * scale.Y,
+    depth: 1 * scale.Z,
     color: 0x00ff00,
     velocity: { x: 0, y: -0.01, z: 0 },
     position: { x: 0, y: -1.25, z: planeMesh.front - 2 },
@@ -395,9 +410,9 @@ function animate() {
       spawnRate -= 5;
     }
     const enemy = new Box({
-      height: 1,
-      width: 1,
-      depth: 1,
+      height: 1 * scale.X,
+      width: 1 * scale.Y,
+      depth: 1 * scale.Z,
       color: 0xff0000,
       velocity: { x: 0, y: 0, z: 0.001 },
       position: {
