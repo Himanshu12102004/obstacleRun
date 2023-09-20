@@ -5,6 +5,7 @@
       body {
         margin: 0;
         background-color: #0c4868;
+        font-family: "VT323", monospace;
       }
       .name {
         position: absolute;
@@ -15,7 +16,6 @@
         top: 20%;
         left: 50%;
         transform: translate(-50%, -50%);
-        font-family: monospace;
         z-index: 30;
         font-size: 25px;
         font-weight: 900;
@@ -37,20 +37,17 @@
         }
       }
       .timer {
-        position: absolute;
-        top: 50px;
-        right: -25px;
         display: flex;
-        transform: translate(-50%, -50%);
-        font-family: monospace;
         z-index: 30;
         font-size: 25px;
         max-width: 300px;
         color: #fff;
+        background-color: rgba(0, 0, 0, 0);
         font-weight: 500;
         gap: 10px;
         text-align: center;
         transform-origin: center;
+        padding: 0.5rem 0.8rem 0 0px;
       }
       .frosted {
         position: absolute;
@@ -60,7 +57,6 @@
         bottom: 0;
         z-index: 100;
         font-size: 30px;
-        font-family: monospace;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -68,15 +64,41 @@
         color: white;
         background-color: rgba(69, 69, 69, 0.4);
       }
+      .heighestTime {
+        top: 15px;
+        left: 0;
+        padding: 0.8rem 0 0px 0.5rem;
+      }
+      .highAndTime {
+        position: absolute;
+        width: 100vw;
+        background-color: transparent;
+        display: flex;
+
+        justify-content: space-between;
+      }
     </style>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=VT323&display=swap"
+      rel="stylesheet"
+    />
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title class="name">Document</title>
   </head>
   <body>
-    <div class="timer">
-      <div class="seconds">00s</div>
-      <div class="centi">00</div>
+    <div class="highAndTime">
+      <div class="heighestTime timer">
+        <div>Heighest Time</div>
+        <div class="highSeconds">00s</div>
+        <div class="highCenti">00</div>
+      </div>
+      <div class="timer">
+        <div class="seconds">00s</div>
+        <div class="centi">00</div>
+      </div>
     </div>
     <div class="press">
       Press any key to start. <br />

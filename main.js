@@ -9,10 +9,39 @@ let lastTree;
 let cubeMesh;
 let enemyAcc;
 let treeModel;
+let highScore = {
+  centi: 0,
+  second: 0,
+};
 let myTime = {
   second: 0,
   centi: 0,
 };
+let highCentiDom = document.querySelector(".highCenti");
+let highSecondDom = document.querySelector(".highSeconds");
+if (localStorage.getItem("highCenti") && localStorage.getItem("highSeconds")) {
+  highScore.centi = localStorage.getItem("highCenti") * 1;
+  highScore.second = localStorage.getItem("highSeconds") * 1;
+  highCentiDom.innerHTML = highScore.centi;
+  highSecondDom.innerHTML = highScore.second + "s";
+}
+
+function incrementHighScore() {
+  if (highScore.second < myTime.second) {
+    highScore.centi = myTime.centi;
+    highScore.second = myTime.second;
+    highCentiDom.innerHTML = highScore.centi.toString().padStart(2, "0");
+    highSecondDom.innerHTML =
+      highScore.second.toString().padStart(2, "0") + "s";
+  } else if (
+    highScore.second === myTime.second &&
+    myTime.centi > highScore.centi
+  ) {
+    highScore.centi = myTime.centi;
+    highCentiDom.innerHTML = highScore.centi.toString().padStart(2, "0");
+  }
+}
+
 // Create an Audio object
 const audio = new Audio("./Assets/backGroundMusic.mp3");
 let timerId;
@@ -21,6 +50,7 @@ function timer() {
     document.querySelector(".centi").innerHTML = myTime.centi
       .toString()
       .padStart(2, "0");
+    incrementHighScore();
     myTime.centi++;
     if (myTime.centi > 99) {
       myTime.second++;
@@ -52,8 +82,8 @@ function playAudioLoop() {
 let gameStart = false;
 // Start playing the audio in a loop
 
-addEventListener("keydown", () => {
-  if (!gameStart) {
+addEventListener("keydown", (e) => {
+  if (!gameStart && e.key === "Enter") {
     init();
     gameStart = true;
     document.querySelector(".press").style.display = "none";
@@ -120,7 +150,7 @@ class Box extends THREE.Mesh {
   applyGravity(ground) {
     this.velocity.y += -this.gravity;
     if (boxCollision({ box1: this, box2: ground })) {
-      this.velocity.y = this.velocity.y * 0.8;
+      this.velocity.y = this.velocity.y * 0.6;
       this.velocity.y = -this.velocity.y;
     } else this.position.y += this.velocity.y;
   }
@@ -191,6 +221,13 @@ window.addEventListener("keydown", (event) => {
     case "KeyD":
       keys.d.pressed = true;
       break;
+    case "ArrowLeft":
+      keys.a.pressed = true;
+      break;
+    case "ArrowRight":
+      keys.d.pressed = true;
+      break;
+
     // case "KeyW":
     //   keys.w.pressed = true;
     //   break;
@@ -208,6 +245,12 @@ window.addEventListener("keyup", (event) => {
       keys.a.pressed = false;
       break;
     case "KeyD":
+      keys.d.pressed = false;
+      break;
+    case "ArrowLeft":
+      keys.a.pressed = false;
+      break;
+    case "ArrowRight":
       keys.d.pressed = false;
       break;
     // case "KeyW":
@@ -242,8 +285,6 @@ loadTree()
     treeModel = tree;
     document.querySelector(".frosted").style.display = "none";
     init();
-
-    console.log(treeModel);
   })
   .catch((err) => {
     console.log(err);
@@ -263,6 +304,7 @@ let treesLeft = [];
 function init() {
   myTime.centi = 0;
   myTime.second = 0;
+  frame = 0;
   document.querySelector(".centi").innerHTML = "00";
 
   document.querySelector(".seconds").innerHTML = "00s";
@@ -280,7 +322,6 @@ function init() {
   treesRight = [];
   const length = scene.children.length;
   for (let i = length - 1; i > 2; i--) {
-    console.log(scene.children);
     scene.remove(scene.children[i]);
   }
   cubeMesh = new Box({
@@ -324,7 +365,6 @@ function init() {
     animate();
   } else {
     addEventListener("keydown", () => {
-      console.log("xygxuagx");
       if (firstGame) {
         animate();
         timer();
@@ -338,18 +378,21 @@ function init() {
 
 function animate() {
   if (frame % 100 === 0) {
-    enemyAcc += 0.0008;
-    treeVelocity += 0.003;
+    if (enemyAcc < 0.01) enemyAcc += 0.0008;
+    if (treeVelocity < 1) treeVelocity += 0.05;
+    console.log(treeVelocity);
   }
-  console.log("fdud");
+  if (enemyAcc >= 0.01) {
+    spawnRate = 15;
+  }
   const animationId = requestAnimationFrame(animate);
 
   cubeMesh.velocity.x = 0;
   cubeMesh.velocity.z = 0;
   frame++;
   if (frame % spawnRate == 0) {
-    if (spawnRate > 10) {
-      spawnRate -= 2;
+    if (spawnRate > 20) {
+      spawnRate -= 5;
     }
     const enemy = new Box({
       height: 1,
@@ -359,7 +402,7 @@ function animate() {
       velocity: { x: 0, y: 0, z: 0.001 },
       position: {
         x: (Math.random() - 0.5) * 10,
-        y: 1,
+        y: 4,
         z: Math.random() * planeMesh.back + 10 * Math.random(),
       },
       Zacc: true,
@@ -374,17 +417,17 @@ function animate() {
       cancelAnimationFrame(animationId);
       document.querySelector(".press").style.color = "red";
       document.querySelector(".press").innerHTML =
-        "Game over.<br> press any key to restart";
+        "Game over.<br> press enter key to restart";
       document.querySelector(".press").style.display = "block";
       clearInterval(timerId);
+
+      localStorage.setItem("highCenti", highScore.centi);
+      localStorage.setItem("highSeconds", highScore.second);
 
       gameStart = false;
     }
   });
   if (lastTree && lastTree.position.z - planeMesh.back > 8) {
-    if (treeSpawnRate > 5) treeSpawnRate - 1;
-    if (treeVelocity < 2) treeVelocity += 0.008;
-
     makeTrees(planeMesh.left - 0.5, -35)
       .then((tree) => {
         scene.add(tree);
