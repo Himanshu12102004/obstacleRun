@@ -458,7 +458,14 @@ function init() {
 
         treesRight.push(tree);
         renderer.render(scene, camera);
-        document.querySelector(".frosted").style.display = "none";
+        if (
+          i === parseInt((planeMesh.front - planeMesh.back) / 5) &&
+          !firstGame
+        ) {
+          setTimeout(() => {
+            document.querySelector(".frosted").style.display = "none";
+          }, 0);
+        }
       })
       .catch((err) => {});
     renderer.render(scene, camera);
@@ -468,6 +475,7 @@ function init() {
   } else {
     addEventListener("keydown", () => {
       if (firstGame) {
+        gameStart = true;
         animate();
         timer();
         playAudioLoop();
@@ -477,6 +485,8 @@ function init() {
     });
     document.querySelector(".touchScreen").addEventListener("click", () => {
       if (firstGame && isTouchDevice()) {
+        gameStart = true;
+
         animate();
         timer();
         playAudioLoop();
