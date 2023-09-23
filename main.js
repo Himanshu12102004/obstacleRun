@@ -548,7 +548,7 @@ function animate(timestamp) {
   frame++;
   if (frame % spawnRate == 0) {
     if (spawnRate > 20) {
-      spawnRate -= 5;
+      spawnRate -= 2;
     }
     const enemy = new Box({
       height: 1 * cubeScale.Y,
