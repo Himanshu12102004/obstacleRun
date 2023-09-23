@@ -5,7 +5,10 @@ let firstGame = true;
 let cubeScale = { X: 1, Y: 1, Z: 1 };
 let planeScale = { X: 1, Y: 1, Z: 1 };
 let treeScale = { X: 1, Y: 1, Z: 1 };
-if (isTouchDevice()) {
+let audioPausedTime = 0;
+let audioCurrentTime = 0;
+let timerId;
+if (isTouchDevice() && innerWidth < 600) {
   cubeScale.X = 0.5;
   cubeScale.Y = 0.5;
   cubeScale.Z = 0.5;
@@ -15,6 +18,9 @@ if (isTouchDevice()) {
   treeScale.Y = 0.7;
   treeScale.Z = 0.7;
   treeScale.X = 0.7;
+} else if (isTouchDevice()) {
+  document.querySelector(".press").style.display = "none";
+  document.querySelector(".touchScreen").style.display = "block";
 } else {
   document.querySelector(".press").style.display = "block";
   document.querySelector(".touchScreen").style.display = "none";
@@ -71,14 +77,18 @@ const audio = new Audio("./Assets/backGroundMusic.mp3");
 function stopAudio() {
   if (!audio.paused) {
     audio.pause();
-    audio.currentTime = 0; // Reset the audio to the beginning
+    // Reset the audio to the beginning
   }
 }
-window.addEventListener("blur", stopAudio);
+window.addEventListener("blur", () => {
+  stopAudio();
+
+  clearInterval(timerId);
+});
 window.addEventListener("focus", () => {
   playAudioLoop();
+  if (gameStart) timer();
 });
-let timerId;
 function timer() {
   timerId = setInterval(() => {
     document.querySelector(".centi").innerHTML = myTime.centi
