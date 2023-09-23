@@ -337,20 +337,35 @@ document.querySelector(".overlay").addEventListener("click", function () {
     clearTimeout(doubleClickTimeout);
     clickCount = 0;
 
-    document.querySelector(".frosted").innerHTML = "Loading...";
-    document.querySelector(".frosted").style.display = "flex";
-
-    setTimeout(() => {
-      document.querySelector(".frosted").style.display = "none";
-    }, 300);
-
-    if (!gameStart && isTouchDevice() && !firstGame) {
-      init();
-      gameStart = true;
-      document.querySelector(".press").style.display = "none";
+    if (isTouchDevice()) {
+      showFrostedElement()
+        .then(() => {
+          if (!gameStart && isTouchDevice() && !firstGame) {
+            init();
+            gameStart = true;
+            document.querySelector(".press").style.display = "none";
+          }
+        })
+        .catch((err) => {
+          console.log(err);
+        });
     }
   }
 });
+function showFrostedElement() {
+  return new Promise((resolve, reject) => {
+    document.querySelector(".frosted").innerHTML = "Loading...";
+
+    const frostedElement = document.querySelector(".frosted");
+    if (frostedElement) {
+      frostedElement.style.display = "flex";
+      console.log("ddiv");
+      resolve(); // Resolve the Promise when the element's display is set to "flex"
+    } else {
+      reject(new Error("Element with class 'frosted' not found"));
+    }
+  });
+}
 
 function loadTree() {
   return new Promise((resolve, reject) => {
@@ -443,6 +458,7 @@ function init() {
 
         treesRight.push(tree);
         renderer.render(scene, camera);
+        document.querySelector(".frosted").style.display = "none";
       })
       .catch((err) => {});
     renderer.render(scene, camera);
