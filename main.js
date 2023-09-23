@@ -16,7 +16,6 @@ if (isTouchDevice()) {
   treeScale.Z = 0.7;
   treeScale.X = 0.7;
 } else {
-  console.log("This device does not have a touch screen.");
   document.querySelector(".press").style.display = "block";
   document.querySelector(".touchScreen").style.display = "none";
 }
@@ -91,7 +90,6 @@ function playAudioLoop() {
     .play()
     .then(() => {
       // Audio started playing
-      console.log("Audio started playing");
     })
     .catch((error) => {
       // Handle any errors
@@ -108,8 +106,8 @@ let gameStart = false;
 // Start playing the audio in a loop
 const overlay = document.querySelector(".overlay");
 detectDoubleClick(overlay, function () {
-  console.log("Double click detected!");
-  if (!gameStart) {
+  if (!gameStart && !firstGame) {
+    document.querySelector(".frosted").style.display = "flex";
     init();
     gameStart = true;
     document.querySelector(".press").style.display = "none";
@@ -251,7 +249,6 @@ function screenWidthToThreeJsUnits(screenWidthInPixels, camera) {
 }
 
 // Example usage:
-console.log(screenWidthToThreeJsUnits(innerWidth, camera));
 const keys = {
   a: {
     pressed: false,
@@ -324,19 +321,15 @@ window.addEventListener("keyup", (event) => {
 
 document.querySelector(".left").addEventListener("touchstart", () => {
   keys.a.pressed = true;
-  console.log(keys.a);
 });
 document.querySelector(".left").addEventListener("touchend", () => {
   keys.a.pressed = false;
-  console.log(keys.a);
 });
 document.querySelector(".right").addEventListener("touchstart", () => {
   keys.d.pressed = true;
-  console.log(keys.d);
 });
 document.querySelector(".right").addEventListener("touchend", () => {
   keys.d.pressed = false;
-  console.log(keys.d);
 });
 function detectDoubleClick(element, callback) {
   let clickCount = 0;
@@ -382,9 +375,7 @@ loadTree()
     document.querySelector(".frosted").style.display = "none";
     init();
   })
-  .catch((err) => {
-    console.log(err);
-  });
+  .catch((err) => {});
 function makeTrees(x, z) {
   return new Promise((resolve, reject) => {
     let tree = treeModel.clone();
@@ -399,16 +390,7 @@ let treesRight = [];
 let treesLeft = [];
 function init() {
   document.querySelector(".overlay").style.display = "none";
-  if (isTouchDevice()) {
-    cubeScale.X = 0.5;
-    cubeScale.Y = 0.5;
-    cubeScale.Z = 0.5;
-    planeScale.X = 0.4;
-    planeScale.Y = 1;
-    planeScale.Z = 1;
-  } else {
-    console.log("This device does not have a touch screen.");
-  }
+
   myTime.centi = 0;
   myTime.second = 0;
   frame = 0;
@@ -455,9 +437,7 @@ function init() {
         lastTree = tree;
         renderer.render(scene, camera);
       })
-      .catch((err) => {
-        console.log(err);
-      });
+      .catch((err) => {});
     makeTrees(planeMesh.right + 0.5, -i * 5 + planeMesh.front)
       .then((tree) => {
         scene.add(tree);
@@ -465,13 +445,11 @@ function init() {
         treesRight.push(tree);
         renderer.render(scene, camera);
       })
-      .catch((err) => {
-        console.log(err);
-      });
+      .catch((err) => {});
     renderer.render(scene, camera);
   }
-  // console.log(lasr)
   if (!firstGame) {
+    document.querySelector(".frosted").style.display = "none";
     animate();
   } else {
     addEventListener("keydown", () => {
@@ -484,14 +462,17 @@ function init() {
       }
     });
     document.querySelector(".touchScreen").addEventListener("click", () => {
-      if (firstGame) {
+      if (firstGame && isTouchDevice()) {
         animate();
         timer();
         playAudioLoop();
         document.querySelector(".press").style.display = "none";
         document.querySelector(".left").classList.add("left--close");
         document.querySelector(".right").classList.add("right--close");
-
+        setTimeout(() => {
+          document.querySelector(".left").innerHTML = "";
+          document.querySelector(".right").innerHTML = "";
+        }, 1000);
         firstGame = false;
       }
     });
@@ -502,7 +483,6 @@ function animate() {
   if (frame % 100 === 0) {
     if (enemyAcc < 0.01) enemyAcc += 0.0008;
     if (treeVelocity < 1) treeVelocity += 0.05;
-    console.log(treeVelocity);
   }
   if (enemyAcc >= 0.01) {
     spawnRate = 15;
@@ -557,7 +537,6 @@ function animate() {
     }
   });
   if (lastTree && lastTree.position.z - planeMesh.back > 5) {
-    console.log(lastTree.position.z);
     makeTrees(planeMesh.left - 0.5, planeMesh.back)
       .then((tree) => {
         scene.add(tree);
@@ -565,9 +544,7 @@ function animate() {
         treesLeft.push(tree);
         lastTree = tree;
       })
-      .catch((err) => {
-        console.log(err);
-      });
+      .catch((err) => {});
 
     makeTrees(planeMesh.right + 0.5, planeMesh.back)
       .then((tree) => {
@@ -575,9 +552,7 @@ function animate() {
 
         treesRight.push(tree);
       })
-      .catch((err) => {
-        console.log(err);
-      });
+      .catch((err) => {});
   }
   treesLeft.forEach((tree, index) => {
     tree.position.z += treeVelocity;
