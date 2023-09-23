@@ -455,7 +455,7 @@ function init() {
     width: 1 * cubeScale.X,
     depth: 1 * cubeScale.Z,
     color: 0x00ff00,
-    velocity: { x: 0, y: -0.01, z: 0 },
+    velocity: { x: 0, y: -0.00001, z: 0 },
     position: {
       x: 0,
       y: planeMesh.top + (1 * cubeScale.Y) / 2,
@@ -534,110 +534,109 @@ function animate(timestamp) {
   const animationId = requestAnimationFrame(animate);
   lastTimestamp = timestamp;
 
-  if (deltaTime >= frameInterval) {
-    console.log("hello");
-    if (frame % 100 === 0) {
-      if (enemyAcc < 0.01) enemyAcc += 0.00058;
-      if (treeVelocity < 1) treeVelocity += 0.05;
-    }
-    if (enemyAcc >= 0.01) {
-      spawnRate = 15;
-    }
-
-    cubeMesh.velocity.x = 0;
-    cubeMesh.velocity.z = 0;
-    frame++;
-    if (frame % spawnRate == 0) {
-      if (spawnRate > 20) {
-        spawnRate -= 5;
-      }
-      const enemy = new Box({
-        height: 1 * cubeScale.Y,
-        width: 1 * cubeScale.X,
-        depth: 1 * cubeScale.Z,
-        color: 0xff0000,
-        velocity: { x: 0, y: 0, z: 0.001 },
-        position: {
-          x:
-            (Math.random() - 0.5) *
-            (planeMesh.right - planeMesh.left - 1 * cubeScale.X),
-          y: 4,
-          z: Math.random() * planeMesh.back + 10 * Math.random(),
-        },
-        Zacc: true,
-      });
-      enemy.castShadow = true;
-      scene.add(enemy);
-      enemies.push(enemy);
-    }
-    enemies.forEach((enemy, index) => {
-      enemy.update(planeMesh, index);
-      if (boxCollision({ box1: cubeMesh, box2: enemy })) {
-        cancelAnimationFrame(animationId);
-        document.querySelector(".press").style.color = "red";
-        document.querySelector(".press").innerHTML = `You Crashed<br> ${
-          isTouchDevice() ? "Double tap to restart" : "Press enter to restart"
-        }`;
-        document.querySelector(".press").style.display = "block";
-
-        clearInterval(timerId);
-
-        localStorage.setItem("highCenti", highScore.centi);
-        localStorage.setItem("highSeconds", highScore.second);
-
-        gameStart = false;
-        document.querySelector(".overlay").style.display = "block";
-      }
-    });
-    if (lastTree && lastTree.position.z - planeMesh.back > 5) {
-      makeTrees(planeMesh.left - 0.5, planeMesh.back)
-        .then((tree) => {
-          scene.add(tree);
-          // tree.rotateY(Math.PI / 2);
-          treesLeft.push(tree);
-          lastTree = tree;
-        })
-        .catch((err) => {});
-
-      makeTrees(planeMesh.right + 0.5, planeMesh.back)
-        .then((tree) => {
-          scene.add(tree);
-
-          treesRight.push(tree);
-        })
-        .catch((err) => {});
-    }
-    treesLeft.forEach((tree, index) => {
-      tree.position.z += treeVelocity;
-      if (tree.position.z > planeMesh.front + 2) {
-        scene.remove(tree);
-
-        treesLeft.splice(index, 1);
-      }
-    });
-    treesRight.forEach((tree, index) => {
-      tree.position.z += treeVelocity;
-      if (tree.position.z > planeMesh.front + 2) {
-        scene.remove(tree);
-        treesRight.splice(index, 1);
-      }
-    });
-    if (keys.a.pressed && cubeMesh.left > planeMesh.left) {
-      cubeMesh.velocity.x = -0.2 * cubeScale.X;
-    } else if (keys.d.pressed && cubeMesh.right < planeMesh.right) {
-      cubeMesh.velocity.x = 0.2 * cubeScale.X;
-    } else if (keys.w.pressed) {
-      cubeMesh.velocity.z = -0.2;
-    } else if (keys.s.pressed) {
-      cubeMesh.velocity.z = 0.2;
-    }
-    if (keys.space.pressed) {
-      cubeMesh.velocity.y = 0.15;
-    }
-    cubeMesh.update(planeMesh);
-    renderer.render(scene, camera);
+  console.log("hello");
+  if (frame % 100 === 0) {
+    if (enemyAcc < 0.01) enemyAcc += 0.00018;
+    if (treeVelocity < 1) treeVelocity += 0.05;
   }
+  if (enemyAcc >= 0.01) {
+    spawnRate = 15;
+  }
+
+  cubeMesh.velocity.x = 0;
+  cubeMesh.velocity.z = 0;
+  frame++;
+  if (frame % spawnRate == 0) {
+    if (spawnRate > 20) {
+      spawnRate -= 5;
+    }
+    const enemy = new Box({
+      height: 1 * cubeScale.Y,
+      width: 1 * cubeScale.X,
+      depth: 1 * cubeScale.Z,
+      color: 0xff0000,
+      velocity: { x: 0, y: 0, z: 0.001 },
+      position: {
+        x:
+          (Math.random() - 0.5) *
+          (planeMesh.right - planeMesh.left - 1 * cubeScale.X),
+        y: 4,
+        z: Math.random() * planeMesh.back + 10 * Math.random(),
+      },
+      Zacc: true,
+    });
+    enemy.castShadow = true;
+    scene.add(enemy);
+    enemies.push(enemy);
+  }
+  enemies.forEach((enemy, index) => {
+    enemy.update(planeMesh, index);
+    if (boxCollision({ box1: cubeMesh, box2: enemy })) {
+      cancelAnimationFrame(animationId);
+      document.querySelector(".press").style.color = "red";
+      document.querySelector(".press").innerHTML = `You Crashed<br> ${
+        isTouchDevice() ? "Double tap to restart" : "Press enter to restart"
+      }`;
+      document.querySelector(".press").style.display = "block";
+
+      clearInterval(timerId);
+
+      localStorage.setItem("highCenti", highScore.centi);
+      localStorage.setItem("highSeconds", highScore.second);
+
+      gameStart = false;
+      document.querySelector(".overlay").style.display = "block";
+    }
+  });
+  if (lastTree && lastTree.position.z - planeMesh.back > 5) {
+    makeTrees(planeMesh.left - 0.5, planeMesh.back)
+      .then((tree) => {
+        scene.add(tree);
+        // tree.rotateY(Math.PI / 2);
+        treesLeft.push(tree);
+        lastTree = tree;
+      })
+      .catch((err) => {});
+
+    makeTrees(planeMesh.right + 0.5, planeMesh.back)
+      .then((tree) => {
+        scene.add(tree);
+
+        treesRight.push(tree);
+      })
+      .catch((err) => {});
+  }
+  treesLeft.forEach((tree, index) => {
+    tree.position.z += treeVelocity;
+    if (tree.position.z > planeMesh.front + 2) {
+      scene.remove(tree);
+
+      treesLeft.splice(index, 1);
+    }
+  });
+  treesRight.forEach((tree, index) => {
+    tree.position.z += treeVelocity;
+    if (tree.position.z > planeMesh.front + 2) {
+      scene.remove(tree);
+      treesRight.splice(index, 1);
+    }
+  });
+  if (keys.a.pressed && cubeMesh.left > planeMesh.left) {
+    cubeMesh.velocity.x = -0.2 * cubeScale.X;
+  } else if (keys.d.pressed && cubeMesh.right < planeMesh.right) {
+    cubeMesh.velocity.x = 0.2 * cubeScale.X;
+  } else if (keys.w.pressed) {
+    cubeMesh.velocity.z = -0.2;
+  } else if (keys.s.pressed) {
+    cubeMesh.velocity.z = 0.2;
+  }
+  if (keys.space.pressed) {
+    cubeMesh.velocity.y = 0.15;
+  }
+  cubeMesh.update(planeMesh);
+  renderer.render(scene, camera);
 }
+
 document.body.appendChild(renderer.domElement);
 
 new OrbitControls(camera, renderer.domElement);
