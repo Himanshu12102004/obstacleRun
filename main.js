@@ -342,10 +342,11 @@ function detectDoubleClick(element, callback) {
         clickCount = 0;
       }, 300); // Adjust the time threshold (in milliseconds) as needed
     } else if (clickCount === 2) {
+      console.log("doubled");
+      document.querySelector(".frosted").style.display = "flex";
       clearTimeout(doubleClickTimeout);
       clickCount = 0;
       if (typeof callback === "function") {
-        document.querySelector(".frosted").style.display = "flex";
         document.querySelector(".frosted").innerHTML = "Loading...";
 
         setTimeout(() => {
