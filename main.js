@@ -2,7 +2,24 @@ import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 let firstGame = true;
-let scale = { X: 1, Y: 1, Z: 1 };
+let cubeScale = { X: 1, Y: 1, Z: 1 };
+let planeScale = { X: 1, Y: 1, Z: 1 };
+let treeScale = { X: 1, Y: 1, Z: 1 };
+if (isTouchDevice()) {
+  cubeScale.X = 0.5;
+  cubeScale.Y = 0.5;
+  cubeScale.Z = 0.5;
+  planeScale.X = 0.4;
+  planeScale.Y = 1;
+  planeScale.Z = 1;
+  treeScale.Y = 0.7;
+  treeScale.Z = 0.7;
+  treeScale.X = 0.7;
+} else {
+  console.log("This device does not have a touch screen.");
+  document.querySelector(".press").style.display = "block";
+  document.querySelector(".touchScreen").style.display = "none";
+}
 let treeVelocity;
 const gltfLoader = new GLTFLoader();
 let lastTree;
@@ -89,7 +106,15 @@ function playAudioLoop() {
 }
 let gameStart = false;
 // Start playing the audio in a loop
-
+const overlay = document.querySelector(".overlay");
+detectDoubleClick(overlay, function () {
+  console.log("Double click detected!");
+  if (!gameStart) {
+    init();
+    gameStart = true;
+    document.querySelector(".press").style.display = "none";
+  }
+});
 addEventListener("keydown", (e) => {
   if (!gameStart && e.key === "Enter") {
     init();
@@ -135,7 +160,6 @@ class Box extends THREE.Mesh {
     this.velocity = velocity;
   }
   update(ground, index) {
-    this.updateSides();
     this.applyGravity(ground);
     if (this.Zacc) {
       this.velocity.z += enemyAcc;
@@ -146,6 +170,7 @@ class Box extends THREE.Mesh {
       enemies.splice(index, 1);
     }
     this.position.x += this.velocity.x;
+    this.updateSides();
   }
   updateSides() {
     this.bottom = this.position.y - this.height / 2;
@@ -188,9 +213,9 @@ scene.add(light);
 // CUBE
 
 const planeMesh = new Box({
-  height: 0.5 * scale.X,
-  width: 10 * scale.Y,
-  depth: 75 * scale.Z,
+  height: 0.5 * planeScale.Y,
+  width: 10 * planeScale.X,
+  depth: 100 * planeScale.Z,
   color: 0x00369a1,
   position: { x: 0, y: -2, z: 0 },
 });
@@ -200,9 +225,33 @@ scene.add(planeMesh);
 //PLANE
 
 // camera.position.y = 1;
-camera.position.set(0, 1.5, planeMesh.front + 5);
-camera.lookAt(0, -1.25, planeMesh.front);
+if (isTouchDevice()) {
+  camera.position.set(0, 1.0 * cubeScale.X, planeMesh.front + 2);
 
+  camera.lookAt(0, 1 * cubeScale.X, planeMesh.front + 2);
+} else {
+  camera.position.set(0, 1.5 * cubeScale.X, planeMesh.front + 4);
+
+  camera.lookAt(0, 1 * cubeScale.X, planeMesh.front + 2);
+}
+function screenWidthToThreeJsUnits(screenWidthInPixels, camera) {
+  // Calculate the aspect ratio of the camera
+  const aspect = camera.aspect;
+
+  // Calculate the horizontal field of view (in radians) of the camera
+  const horizontalFOV = camera.fov * (Math.PI / 180);
+
+  // Calculate the width of the screen in Three.js units
+  const halfWidth = Math.tan(horizontalFOV / 2);
+  const distanceToScreen = screenWidthInPixels / 2 / halfWidth;
+  const screenUnits =
+    (screenWidthInPixels / window.innerWidth) * distanceToScreen * 2;
+
+  return screenUnits;
+}
+
+// Example usage:
+console.log(screenWidthToThreeJsUnits(innerWidth, camera));
 const keys = {
   a: {
     pressed: false,
@@ -271,13 +320,52 @@ window.addEventListener("keyup", (event) => {
     //   keys.space.pressed = false;
   }
 });
+// Touch Screen logic
+
+document.querySelector(".left").addEventListener("touchstart", () => {
+  keys.a.pressed = true;
+  console.log(keys.a);
+});
+document.querySelector(".left").addEventListener("touchend", () => {
+  keys.a.pressed = false;
+  console.log(keys.a);
+});
+document.querySelector(".right").addEventListener("touchstart", () => {
+  keys.d.pressed = true;
+  console.log(keys.d);
+});
+document.querySelector(".right").addEventListener("touchend", () => {
+  keys.d.pressed = false;
+  console.log(keys.d);
+});
+function detectDoubleClick(element, callback) {
+  let clickCount = 0;
+  let doubleClickTimeout;
+
+  element.addEventListener("click", function () {
+    clickCount++;
+
+    if (clickCount === 1) {
+      doubleClickTimeout = setTimeout(function () {
+        clickCount = 0;
+      }, 300); // Adjust the time threshold (in milliseconds) as needed
+    } else if (clickCount === 2) {
+      clearTimeout(doubleClickTimeout);
+      clickCount = 0;
+      if (typeof callback === "function") {
+        callback();
+      }
+    }
+  });
+}
+
 function loadTree() {
   return new Promise((resolve, reject) => {
     gltfLoader.load(
       "./Assets/tree/scene.gltf",
       function (gltf) {
         const tree = gltf.scene;
-        tree.scale.set(1, 1, 1);
+        tree.scale.set(1 * treeScale.X, 1 * treeScale.Y, 1 * treeScale.Z);
         resolve(tree); // Resolve the promise with the loaded tree object
       },
       undefined,
@@ -300,7 +388,7 @@ loadTree()
 function makeTrees(x, z) {
   return new Promise((resolve, reject) => {
     let tree = treeModel.clone();
-    tree.position.set(x, 2, z);
+    tree.position.set(x, 2 * cubeScale.X * treeScale.Y, z);
     resolve(tree);
   });
 }
@@ -310,10 +398,14 @@ let frame = 0;
 let treesRight = [];
 let treesLeft = [];
 function init() {
+  document.querySelector(".overlay").style.display = "none";
   if (isTouchDevice()) {
-    scale.X = 0.1;
-    scale.Y = 0.1;
-    scale.Z = 0.1;
+    cubeScale.X = 0.5;
+    cubeScale.Y = 0.5;
+    cubeScale.Z = 0.5;
+    planeScale.X = 0.4;
+    planeScale.Y = 1;
+    planeScale.Z = 1;
   } else {
     console.log("This device does not have a touch screen.");
   }
@@ -340,21 +432,24 @@ function init() {
     scene.remove(scene.children[i]);
   }
   cubeMesh = new Box({
-    height: 1 * scale.X,
-    width: 1 * scale.Y,
-    depth: 1 * scale.Z,
+    height: 1 * cubeScale.Y,
+    width: 1 * cubeScale.X,
+    depth: 1 * cubeScale.Z,
     color: 0x00ff00,
     velocity: { x: 0, y: -0.01, z: 0 },
-    position: { x: 0, y: -1.25, z: planeMesh.front - 2 },
+    position: {
+      x: 0,
+      y: planeMesh.top + (1 * cubeScale.Y) / 2,
+      z: planeMesh.front - 4,
+    },
   });
   cubeMesh.castShadow = true;
   scene.add(cubeMesh);
 
-  for (let i = 0; i < 15; i++) {
+  for (let i = 0; i < (planeMesh.front - planeMesh.back) / 5 + 1; i++) {
     makeTrees(planeMesh.left - 0.5, -i * 5 + planeMesh.front)
       .then((tree) => {
         scene.add(tree);
-        // tree.rotateY(Math.PI / 2);
 
         treesLeft.push(tree);
         lastTree = tree;
@@ -388,6 +483,18 @@ function init() {
         firstGame = false;
       }
     });
+    document.querySelector(".touchScreen").addEventListener("click", () => {
+      if (firstGame) {
+        animate();
+        timer();
+        playAudioLoop();
+        document.querySelector(".press").style.display = "none";
+        document.querySelector(".left").classList.add("left--close");
+        document.querySelector(".right").classList.add("right--close");
+
+        firstGame = false;
+      }
+    });
   }
 }
 
@@ -410,13 +517,15 @@ function animate() {
       spawnRate -= 5;
     }
     const enemy = new Box({
-      height: 1 * scale.X,
-      width: 1 * scale.Y,
-      depth: 1 * scale.Z,
+      height: 1 * cubeScale.Y,
+      width: 1 * cubeScale.X,
+      depth: 1 * cubeScale.Z,
       color: 0xff0000,
       velocity: { x: 0, y: 0, z: 0.001 },
       position: {
-        x: (Math.random() - 0.5) * 10,
+        x:
+          (Math.random() - 0.5) *
+          (planeMesh.right - planeMesh.left - 1 * cubeScale.X),
         y: 4,
         z: Math.random() * planeMesh.back + 10 * Math.random(),
       },
@@ -431,19 +540,25 @@ function animate() {
     if (boxCollision({ box1: cubeMesh, box2: enemy })) {
       cancelAnimationFrame(animationId);
       document.querySelector(".press").style.color = "red";
-      document.querySelector(".press").innerHTML =
-        "Game over.<br> press enter key to restart";
+      document.querySelector(".press").innerHTML = `You Crashed<br> ${
+        isTouchDevice()
+          ? "Double tap anywhere to restart"
+          : "Press enter key to restart"
+      }`;
       document.querySelector(".press").style.display = "block";
+
       clearInterval(timerId);
 
       localStorage.setItem("highCenti", highScore.centi);
       localStorage.setItem("highSeconds", highScore.second);
 
       gameStart = false;
+      document.querySelector(".overlay").style.display = "block";
     }
   });
-  if (lastTree && lastTree.position.z - planeMesh.back > 8) {
-    makeTrees(planeMesh.left - 0.5, -35)
+  if (lastTree && lastTree.position.z - planeMesh.back > 5) {
+    console.log(lastTree.position.z);
+    makeTrees(planeMesh.left - 0.5, planeMesh.back)
       .then((tree) => {
         scene.add(tree);
         // tree.rotateY(Math.PI / 2);
@@ -454,7 +569,7 @@ function animate() {
         console.log(err);
       });
 
-    makeTrees(planeMesh.right + 0.5, -35)
+    makeTrees(planeMesh.right + 0.5, planeMesh.back)
       .then((tree) => {
         scene.add(tree);
 
@@ -468,6 +583,7 @@ function animate() {
     tree.position.z += treeVelocity;
     if (tree.position.z > planeMesh.front + 2) {
       scene.remove(tree);
+
       treesLeft.splice(index, 1);
     }
   });
@@ -479,9 +595,9 @@ function animate() {
     }
   });
   if (keys.a.pressed && cubeMesh.left > planeMesh.left) {
-    cubeMesh.velocity.x = -0.2;
+    cubeMesh.velocity.x = -0.2 * cubeScale.X;
   } else if (keys.d.pressed && cubeMesh.right < planeMesh.right) {
-    cubeMesh.velocity.x = 0.2;
+    cubeMesh.velocity.x = 0.2 * cubeScale.X;
   } else if (keys.w.pressed) {
     cubeMesh.velocity.z = -0.2;
   } else if (keys.s.pressed) {

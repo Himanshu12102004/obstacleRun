@@ -1,0 +1,121 @@
+body {
+  background-color: #0c4868;
+  font-family: "VT323", monospace;
+}
+* {
+  margin: 0;
+  box-sizing: border-box;
+}
+.name {
+  position: absolute;
+  top: 0;
+}
+.press {
+  position: absolute;
+  top: 20%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 30;
+  font-size: 2rem;
+  font-weight: 900;
+  display: none;
+  min-width: 300px;
+  color: #00ff00;
+  text-align: center;
+  transform-origin: center;
+  animation: pressAnimator 1s infinite ease-in-out;
+}
+@keyframes pressAnimator {
+  0% {
+    transform: scale(1) translate(-50%, -50%);
+  }
+  50% {
+    transform: scale(1.01) translate(-50%, -50%);
+  }
+  100% {
+    transform: scale(1) translate(-50%, -50%);
+  }
+}
+.timer {
+  display: flex;
+  z-index: 30;
+  font-size: 25px;
+  max-width: 300px;
+  color: #fff;
+  background-color: rgba(0, 0, 0, 0);
+  font-weight: 500;
+  gap: 10px;
+  text-align: center;
+  transform-origin: center;
+  padding: 0.5rem 0.8rem 0 0px;
+}
+.frosted {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 100;
+  font-size: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(4px);
+  color: white;
+  background-color: rgba(69, 69, 69, 0.4);
+}
+.heighestTime {
+  top: 15px;
+  left: 0;
+  padding: 0.5rem 0 0px 0.5rem;
+}
+.highAndTime {
+  position: absolute;
+  width: 100vw;
+  background-color: transparent;
+  display: flex;
+
+  justify-content: space-between;
+}
+.left,
+.right {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  top: 0;
+  text-align: center;
+  /* padding: 5px; */
+  bottom: 0;
+  z-index: 30;
+  overflow: hidden;
+  opacity: 1;
+}
+.left {
+  left: 0;
+  width: 50vw;
+  background-color: rgba(255, 250, 89, 0.4);
+  font-size: 2rem;
+  color: rgb(0, 0, 0);
+}
+.right {
+  right: 0;
+  width: 50vw;
+  background-color: rgba(10, 250, 89, 0.4);
+  font-size: 2rem;
+  color: rgb(255, 255, 255);
+}
+.right--close,
+.left--close {
+  opacity: 0;
+  transition: all 1s ease-out;
+}
+.overlay {
+  display: none;
+  z-index: 50;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+}

@@ -1,83 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <style>
-      body {
-        margin: 0;
-        background-color: #0c4868;
-        font-family: "VT323", monospace;
-      }
-      .name {
-        position: absolute;
-        top: 0;
-      }
-      .press {
-        position: absolute;
-        top: 20%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        z-index: 30;
-        font-size: 25px;
-        font-weight: 900;
-        max-width: 300px;
-        color: #00ff00;
-        text-align: center;
-        transform-origin: center;
-        animation: pressAnimator 1s infinite ease-in-out;
-      }
-      @keyframes pressAnimator {
-        0% {
-          transform: scale(1) translate(-50%, -50%);
-        }
-        50% {
-          transform: scale(1.01) translate(-50%, -50%);
-        }
-        100% {
-          transform: scale(1) translate(-50%, -50%);
-        }
-      }
-      .timer {
-        display: flex;
-        z-index: 30;
-        font-size: 25px;
-        max-width: 300px;
-        color: #fff;
-        background-color: rgba(0, 0, 0, 0);
-        font-weight: 500;
-        gap: 10px;
-        text-align: center;
-        transform-origin: center;
-        padding: 0.5rem 0.8rem 0 0px;
-      }
-      .frosted {
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        z-index: 100;
-        font-size: 30px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        backdrop-filter: blur(4px);
-        color: white;
-        background-color: rgba(69, 69, 69, 0.4);
-      }
-      .heighestTime {
-        top: 15px;
-        left: 0;
-        padding: 0.8rem 0 0px 0.5rem;
-      }
-      .highAndTime {
-        position: absolute;
-        width: 100vw;
-        background-color: transparent;
-        display: flex;
-
-        justify-content: space-between;
-      }
-    </style>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -86,16 +9,19 @@
     />
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="style.css" />
     <title class="name">Obstacle Run</title>
   </head>
   <body>
     <div class="highAndTime">
       <div class="heighestTime timer">
-        <div>Heighest Time</div>
+        <div>High Score:</div>
         <div class="highSeconds">00s</div>
         <div class="highCenti">00</div>
       </div>
       <div class="timer">
+        <div></div>
+
         <div class="seconds">00s</div>
         <div class="centi">00</div>
       </div>
@@ -105,6 +31,16 @@
       Use arrow keys to control
     </div>
     <div class="frosted">Placing Objects...</div>
+    <div class="touchScreen">
+      <div class="left">
+        Tap and hold on this half <br />to move the green block left
+      </div>
+      <div class="right">
+        Tap and hold on this half <br />
+        to move the green block right
+      </div>
+    </div>
+    <div class="overlay"></div>
   </body>
   <script type="module" src="./main.js"></script>
 </html>
