@@ -107,7 +107,6 @@ let gameStart = false;
 const overlay = document.querySelector(".overlay");
 detectDoubleClick(overlay, function () {
   if (!gameStart && !firstGame) {
-    document.querySelector(".frosted").style.display = "flex";
     init();
     gameStart = true;
     document.querySelector(".press").style.display = "none";
@@ -346,6 +345,13 @@ function detectDoubleClick(element, callback) {
       clearTimeout(doubleClickTimeout);
       clickCount = 0;
       if (typeof callback === "function") {
+        document.querySelector(".frosted").style.display = "flex";
+        document.querySelector(".frosted").innerHTML = "Loading...";
+
+        setTimeout(() => {
+          document.querySelector(".frosted").style.display = "none";
+        }, 300);
+
         callback();
       }
     }
@@ -390,7 +396,6 @@ let treesRight = [];
 let treesLeft = [];
 function init() {
   document.querySelector(".overlay").style.display = "none";
-
   myTime.centi = 0;
   myTime.second = 0;
   frame = 0;
@@ -449,7 +454,6 @@ function init() {
     renderer.render(scene, camera);
   }
   if (!firstGame) {
-    document.querySelector(".frosted").style.display = "none";
     animate();
   } else {
     addEventListener("keydown", () => {
@@ -521,9 +525,7 @@ function animate() {
       cancelAnimationFrame(animationId);
       document.querySelector(".press").style.color = "red";
       document.querySelector(".press").innerHTML = `You Crashed<br> ${
-        isTouchDevice()
-          ? "Double tap anywhere to restart"
-          : "Press enter key to restart"
+        isTouchDevice() ? "Double tap to restart" : "Press enter to restart"
       }`;
       document.querySelector(".press").style.display = "block";
 
