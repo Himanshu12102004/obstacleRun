@@ -105,13 +105,7 @@ function playAudioLoop() {
 let gameStart = false;
 // Start playing the audio in a loop
 const overlay = document.querySelector(".overlay");
-detectDoubleClick(overlay, function () {
-  if (!gameStart && !firstGame) {
-    init();
-    gameStart = true;
-    document.querySelector(".press").style.display = "none";
-  }
-});
+
 addEventListener("keydown", (e) => {
   if (!gameStart && e.key === "Enter") {
     init();
@@ -330,34 +324,33 @@ document.querySelector(".right").addEventListener("touchstart", () => {
 document.querySelector(".right").addEventListener("touchend", () => {
   keys.d.pressed = false;
 });
-function detectDoubleClick(element, callback) {
-  let clickCount = 0;
+let clickCount = 0;
+document.querySelector(".overlay").addEventListener("click", function () {
+  clickCount++;
   let doubleClickTimeout;
+  if (clickCount === 1) {
+    doubleClickTimeout = setTimeout(function () {
+      clickCount = 0;
+    }, 300); // Adjust the time threshold (in milliseconds) as needed
+  } else if (clickCount === 2) {
+    console.log("doubled");
+    clearTimeout(doubleClickTimeout);
+    clickCount = 0;
 
-  element.addEventListener("click", function () {
-    clickCount++;
+    document.querySelector(".frosted").innerHTML = "Loading...";
     document.querySelector(".frosted").style.display = "flex";
 
-    if (clickCount === 1) {
-      doubleClickTimeout = setTimeout(function () {
-        clickCount = 0;
-      }, 300); // Adjust the time threshold (in milliseconds) as needed
-    } else if (clickCount === 2) {
-      console.log("doubled");
-      clearTimeout(doubleClickTimeout);
-      clickCount = 0;
-      if (typeof callback === "function") {
-        document.querySelector(".frosted").innerHTML = "Loading...";
+    setTimeout(() => {
+      document.querySelector(".frosted").style.display = "none";
+    }, 300);
 
-        setTimeout(() => {
-          document.querySelector(".frosted").style.display = "none";
-        }, 300);
-
-        callback();
-      }
+    if (!gameStart && isTouchDevice() && !firstGame) {
+      init();
+      gameStart = true;
+      document.querySelector(".press").style.display = "none";
     }
-  });
-}
+  }
+});
 
 function loadTree() {
   return new Promise((resolve, reject) => {
