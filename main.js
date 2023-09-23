@@ -5,7 +5,7 @@ let firstGame = true;
 let cubeScale = { X: 1, Y: 1, Z: 1 };
 let planeScale = { X: 1, Y: 1, Z: 1 };
 let treeScale = { X: 1, Y: 1, Z: 1 };
-if (isTouchDevice() && innerWidth < 600) {
+if (isTouchDevice()) {
   cubeScale.X = 0.5;
   cubeScale.Y = 0.5;
   cubeScale.Z = 0.5;
@@ -68,6 +68,16 @@ function incrementHighScore() {
 
 // Create an Audio object
 const audio = new Audio("./Assets/backGroundMusic.mp3");
+function stopAudio() {
+  if (!audio.paused) {
+    audio.pause();
+    audio.currentTime = 0; // Reset the audio to the beginning
+  }
+}
+window.addEventListener("blur", stopAudio);
+window.addEventListener("focus", () => {
+  playAudioLoop();
+});
 let timerId;
 function timer() {
   timerId = setInterval(() => {
