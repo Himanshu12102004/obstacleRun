@@ -24,6 +24,11 @@ body {
   text-align: center;
   transform-origin: center;
   animation: pressAnimator 1s infinite ease-in-out;
+
+  user-select: none;
+  -moz-user-select: none; /* Firefox */
+  -ms-user-select: none; /* Internet Explorer/Edge */
+  -webkit-user-select: none; /* Chrome, Safari, and Opera */
 }
 @keyframes pressAnimator {
   0% {
@@ -85,6 +90,11 @@ body {
   position: absolute;
   top: 0;
   text-align: center;
+  user-select: none;
+  -moz-user-select: none; /* Firefox */
+  -ms-user-select: none; /* Internet Explorer/Edge */
+  -webkit-user-select: none; /* Chrome, Safari, and Opera */
+
   /* padding: 5px; */
   bottom: 0;
   z-index: 30;
