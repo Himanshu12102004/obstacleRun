@@ -336,21 +336,21 @@ function detectDoubleClick(element, callback) {
 
   element.addEventListener("click", function () {
     clickCount++;
-    callback();
+
     if (clickCount === 1) {
       doubleClickTimeout = setTimeout(function () {
         clickCount = 0;
-      }, 0); // Adjust the time threshold (in milliseconds) as needed
+      }, 300); // Adjust the time threshold (in milliseconds) as needed
     } else if (clickCount === 2) {
       console.log("doubled");
-      // document.querySelector(".frosted").style.display = "flex";
+      document.querySelector(".frosted").style.display = "flex";
       clearTimeout(doubleClickTimeout);
       clickCount = 0;
       if (typeof callback === "function") {
-        // document.querySelector(".frosted").innerHTML = "Loading...";
+        document.querySelector(".frosted").innerHTML = "Loading...";
 
         setTimeout(() => {
-          // document.querySelector(".frosted").style.display = "none";
+          document.querySelector(".frosted").style.display = "none";
         }, 300);
 
         callback();
