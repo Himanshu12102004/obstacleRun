@@ -5,7 +5,7 @@ let firstGame = true;
 let cubeScale = { X: 1, Y: 1, Z: 1 };
 let planeScale = { X: 1, Y: 1, Z: 1 };
 let treeScale = { X: 1, Y: 1, Z: 1 };
-if (isTouchDevice()) {
+if (isTouchDevice() && innerWidth < 600) {
   cubeScale.X = 0.5;
   cubeScale.Y = 0.5;
   cubeScale.Z = 0.5;
@@ -341,8 +341,10 @@ document.querySelector(".overlay").addEventListener("click", function () {
       showFrostedElement()
         .then(() => {
           if (!gameStart && isTouchDevice() && !firstGame) {
-            init();
             gameStart = true;
+            setTimeout(() => {
+              init();
+            }, 20);
             document.querySelector(".press").style.display = "none";
           }
         })
@@ -419,7 +421,7 @@ function init() {
   spawnRate = 100;
   treeVelocity = 0.07;
 
-  enemyAcc = 0.001;
+  enemyAcc = 0.0005;
   enemies = [];
   treesLeft = [];
   treesRight = [];
