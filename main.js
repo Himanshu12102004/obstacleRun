@@ -354,7 +354,7 @@ document.querySelector(".overlay").addEventListener("click", function () {
             gameStart = true;
             setTimeout(() => {
               init();
-            }, 20);
+            }, 10);
             document.querySelector(".press").style.display = "none";
           }
         })
