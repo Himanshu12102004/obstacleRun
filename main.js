@@ -344,7 +344,7 @@ document.querySelector(".overlay").addEventListener("click", function () {
             gameStart = true;
             setTimeout(() => {
               init();
-            }, 20);
+            }, 5);
             document.querySelector(".press").style.display = "none";
           }
         })
@@ -421,7 +421,7 @@ function init() {
   spawnRate = 100;
   treeVelocity = 0.07;
 
-  enemyAcc = 0.0005;
+  enemyAcc = 0.0;
   enemies = [];
   treesLeft = [];
   treesRight = [];
@@ -507,7 +507,7 @@ function init() {
 
 function animate() {
   if (frame % 100 === 0) {
-    if (enemyAcc < 0.01) enemyAcc += 0.0008;
+    if (enemyAcc < 0.01) enemyAcc += 0.00058;
     if (treeVelocity < 1) treeVelocity += 0.05;
   }
   if (enemyAcc >= 0.01) {
