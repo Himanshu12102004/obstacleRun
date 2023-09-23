@@ -547,7 +547,7 @@ function animate(timestamp) {
   cubeMesh.velocity.z = 0;
   frame++;
   if (frame % spawnRate == 0) {
-    if (spawnRate > 20) {
+    if (spawnRate > 30) {
       spawnRate -= 2;
     }
     const enemy = new Box({
@@ -561,7 +561,7 @@ function animate(timestamp) {
           (Math.random() - 0.5) *
           (planeMesh.right - planeMesh.left - 1 * cubeScale.X),
         y: 4,
-        z: Math.random() * planeMesh.back + 10 * Math.random(),
+        z: Math.random() * planeMesh.back + 40 * Math.random(),
       },
       Zacc: true,
     });
