@@ -563,7 +563,7 @@ function animate(timestamp) {
         x:
           (Math.random() - 0.5) *
           (planeMesh.right - planeMesh.left - 1 * cubeScale.X),
-        y: height,
+        y: 0.5,
         z:
           Math.random() * (planeMesh.front - 20 - planeMesh.back) +
           planeMesh.back,
