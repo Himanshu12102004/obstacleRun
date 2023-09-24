@@ -6,7 +6,7 @@ let cubeScale = { X: 1, Y: 1, Z: 1 };
 let planeScale = { X: 1, Y: 1, Z: 1 };
 let treeScale = { X: 1, Y: 1, Z: 1 };
 let lastEnemy = null;
-let height = 0.5;
+let height = 2;
 let lastTimestamp;
 let myFront;
 let timerId;
@@ -431,7 +431,7 @@ function init() {
   document.querySelector(".overlay").style.display = "none";
   myTime.centi = 0;
   myFront = 10;
-  height = 0.5;
+  height = 2;
   myTime.second = 0;
   frame = 0;
   lastTimestamp = 0;
