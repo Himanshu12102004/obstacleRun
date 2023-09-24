@@ -6,6 +6,7 @@ let cubeScale = { X: 1, Y: 1, Z: 1 };
 let planeScale = { X: 1, Y: 1, Z: 1 };
 let treeScale = { X: 1, Y: 1, Z: 1 };
 let lastEnemy = null;
+let height = 4;
 let lastTimestamp;
 let myFront;
 let timerId;
@@ -430,6 +431,7 @@ function init() {
   document.querySelector(".overlay").style.display = "none";
   myTime.centi = 0;
   myFront = 10;
+  height = 4;
   myTime.second = 0;
   frame = 0;
   lastTimestamp = 0;
@@ -535,7 +537,10 @@ function animate(timestamp) {
   lastTimestamp = timestamp;
   let animationId = setInterval(() => {
     if (frame % 60 === 0) {
-      if (enemyAcc < 0.01) enemyAcc += 0.00018;
+      if (height > 1) {
+        height -= 0.1;
+      }
+      if (enemyAcc < 0.04) enemyAcc += 0.0018;
       if (treeVelocity < 1) treeVelocity += 0.05;
     }
     if (enemyAcc >= 0.005) {
@@ -557,12 +562,12 @@ function animate(timestamp) {
         width: 1 * cubeScale.X,
         depth: 1 * cubeScale.Z,
         color: 0xff0000,
-        velocity: { x: 0, y: 0, z: 0.001 },
+        velocity: { x: 0, y: 0, z: 0.01 },
         position: {
           x:
             (Math.random() - 0.5) *
             (planeMesh.right - planeMesh.left - 1 * cubeScale.X),
-          y: 4,
+          y: height,
           z:
             Math.random() * (planeMesh.front - 20 - planeMesh.back) +
             planeMesh.back,
