@@ -552,7 +552,7 @@ function animate(timestamp) {
     cubeMesh.velocity.z = 0;
     frame++;
     if (frame % spawnRate == 0) {
-      if (spawnRate > 25) {
+      if (spawnRate > 10) {
         spawnRate -= 2;
       } else {
         console.log("hello");
@@ -645,7 +645,7 @@ function animate(timestamp) {
     }
     cubeMesh.update(planeMesh);
     renderer.render(scene, camera);
-  }, 15);
+  }, 1000 / 60);
 }
 
 document.body.appendChild(renderer.domElement);
