@@ -160,7 +160,7 @@ class Box extends THREE.Mesh {
     this.height = height;
     this.width = width;
     this.depth = depth;
-    this.gravity = 0.01;
+    this.gravity = 0.006;
     this.position.set(position.x, position.y, position.z);
     this.bottom = this.position.y - this.height / 2;
     this.top = this.position.y + this.height / 2;
@@ -536,8 +536,8 @@ function animate(timestamp) {
   lastTimestamp = timestamp;
 
   if (frame % 60 === 0) {
-    if (enemyAcc < 0.01) enemyAcc += 0.00018;
-    if (treeVelocity < 1) treeVelocity += 0.05;
+    if (enemyAcc < 0.01) enemyAcc += 0.00006;
+    if (treeVelocity < 1) treeVelocity += 0.005;
   }
   if (enemyAcc >= 0.005) {
     spawnRate = 20;
@@ -558,7 +558,7 @@ function animate(timestamp) {
       width: 1 * cubeScale.X,
       depth: 1 * cubeScale.Z,
       color: 0xff0000,
-      velocity: { x: 0, y: 0, z: 0.001 },
+      velocity: { x: 0, y: 0, z: 0.0003 },
       position: {
         x:
           (Math.random() - 0.5) *
