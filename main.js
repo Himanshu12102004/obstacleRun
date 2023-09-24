@@ -160,7 +160,7 @@ class Box extends THREE.Mesh {
     this.height = height;
     this.width = width;
     this.depth = depth;
-    this.gravity = 0.006;
+    this.gravity = 0.01;
     this.position.set(position.x, position.y, position.z);
     this.bottom = this.position.y - this.height / 2;
     this.top = this.position.y + this.height / 2;
@@ -532,115 +532,115 @@ let frameInterval = 1 / frameRate;
 lastTimestamp = 0;
 function animate(timestamp) {
   const deltaTime = (timestamp - lastTimestamp) / 1000;
-  const animationId = requestAnimationFrame(animate);
   lastTimestamp = timestamp;
-
-  if (frame % 60 === 0) {
-    if (enemyAcc < 0.01) enemyAcc += 0.00006;
-    if (treeVelocity < 1) treeVelocity += 0.005;
-  }
-  if (enemyAcc >= 0.005) {
-    spawnRate = 20;
-    console.log(spawnRate);
-  }
-
-  cubeMesh.velocity.x = 0;
-  cubeMesh.velocity.z = 0;
-  frame++;
-  if (frame % spawnRate == 0) {
-    if (spawnRate > 25) {
-      spawnRate -= 2;
-    } else {
-      console.log("hello");
+  let animationId = setInterval(() => {
+    if (frame % 60 === 0) {
+      if (enemyAcc < 0.01) enemyAcc += 0.00018;
+      if (treeVelocity < 1) treeVelocity += 0.05;
     }
-    const enemy = new Box({
-      height: 1 * cubeScale.Y,
-      width: 1 * cubeScale.X,
-      depth: 1 * cubeScale.Z,
-      color: 0xff0000,
-      velocity: { x: 0, y: 0, z: 0.0003 },
-      position: {
-        x:
-          (Math.random() - 0.5) *
-          (planeMesh.right - planeMesh.left - 1 * cubeScale.X),
-        y: 2,
-        z:
-          Math.random() * (planeMesh.front - 20 - planeMesh.back) +
-          planeMesh.back,
-      },
-      Zacc: true,
+    if (enemyAcc >= 0.005) {
+      spawnRate = 20;
+      console.log(spawnRate);
+    }
+
+    cubeMesh.velocity.x = 0;
+    cubeMesh.velocity.z = 0;
+    frame++;
+    if (frame % spawnRate == 0) {
+      if (spawnRate > 25) {
+        spawnRate -= 2;
+      } else {
+        console.log("hello");
+      }
+      const enemy = new Box({
+        height: 1 * cubeScale.Y,
+        width: 1 * cubeScale.X,
+        depth: 1 * cubeScale.Z,
+        color: 0xff0000,
+        velocity: { x: 0, y: 0, z: 0.001 },
+        position: {
+          x:
+            (Math.random() - 0.5) *
+            (planeMesh.right - planeMesh.left - 1 * cubeScale.X),
+          y: 4,
+          z:
+            Math.random() * (planeMesh.front - 20 - planeMesh.back) +
+            planeMesh.back,
+        },
+        Zacc: true,
+      });
+      lastEnemy = enemy;
+      enemy.castShadow = true;
+      scene.add(enemy);
+      enemies.push(enemy);
+    }
+    enemies.forEach((enemy, index) => {
+      enemy.update(planeMesh, index);
+      if (boxCollision({ box1: cubeMesh, box2: enemy })) {
+        clearInterval(animationId);
+        document.querySelector(".press").style.color = "red";
+        document.querySelector(".press").innerHTML = `You Crashed<br> ${
+          isTouchDevice() ? "Double tap to restart" : "Press enter to restart"
+        }`;
+        document.querySelector(".press").style.display = "block";
+
+        clearInterval(timerId);
+
+        localStorage.setItem("highCenti", highScore.centi);
+        localStorage.setItem("highSeconds", highScore.second);
+
+        gameStart = false;
+        document.querySelector(".overlay").style.display = "block";
+      }
     });
-    lastEnemy = enemy;
-    enemy.castShadow = true;
-    scene.add(enemy);
-    enemies.push(enemy);
-  }
-  enemies.forEach((enemy, index) => {
-    enemy.update(planeMesh, index);
-    if (boxCollision({ box1: cubeMesh, box2: enemy })) {
-      cancelAnimationFrame(animationId);
-      document.querySelector(".press").style.color = "red";
-      document.querySelector(".press").innerHTML = `You Crashed<br> ${
-        isTouchDevice() ? "Double tap to restart" : "Press enter to restart"
-      }`;
-      document.querySelector(".press").style.display = "block";
+    if (lastTree && lastTree.position.z - planeMesh.back > 5) {
+      makeTrees(planeMesh.left - 0.5, planeMesh.back)
+        .then((tree) => {
+          scene.add(tree);
+          // tree.rotateY(Math.PI / 2);
+          treesLeft.push(tree);
+          lastTree = tree;
+        })
+        .catch((err) => {});
 
-      clearInterval(timerId);
+      makeTrees(planeMesh.right + 0.5, planeMesh.back)
+        .then((tree) => {
+          scene.add(tree);
 
-      localStorage.setItem("highCenti", highScore.centi);
-      localStorage.setItem("highSeconds", highScore.second);
-
-      gameStart = false;
-      document.querySelector(".overlay").style.display = "block";
+          treesRight.push(tree);
+        })
+        .catch((err) => {});
     }
-  });
-  if (lastTree && lastTree.position.z - planeMesh.back > 5) {
-    makeTrees(planeMesh.left - 0.5, planeMesh.back)
-      .then((tree) => {
-        scene.add(tree);
-        // tree.rotateY(Math.PI / 2);
-        treesLeft.push(tree);
-        lastTree = tree;
-      })
-      .catch((err) => {});
+    treesLeft.forEach((tree, index) => {
+      tree.position.z += treeVelocity;
+      if (tree.position.z > planeMesh.front + 2) {
+        scene.remove(tree);
 
-    makeTrees(planeMesh.right + 0.5, planeMesh.back)
-      .then((tree) => {
-        scene.add(tree);
-
-        treesRight.push(tree);
-      })
-      .catch((err) => {});
-  }
-  treesLeft.forEach((tree, index) => {
-    tree.position.z += treeVelocity;
-    if (tree.position.z > planeMesh.front + 2) {
-      scene.remove(tree);
-
-      treesLeft.splice(index, 1);
+        treesLeft.splice(index, 1);
+      }
+    });
+    treesRight.forEach((tree, index) => {
+      tree.position.z += treeVelocity;
+      if (tree.position.z > planeMesh.front + 2) {
+        scene.remove(tree);
+        treesRight.splice(index, 1);
+      }
+    });
+    if (keys.a.pressed && cubeMesh.left > planeMesh.left) {
+      cubeMesh.velocity.x = -0.2 * cubeScale.X;
+    } else if (keys.d.pressed && cubeMesh.right < planeMesh.right) {
+      cubeMesh.velocity.x = 0.2 * cubeScale.X;
+    } else if (keys.w.pressed) {
+      cubeMesh.velocity.z = -0.2;
+    } else if (keys.s.pressed) {
+      cubeMesh.velocity.z = 0.2;
     }
-  });
-  treesRight.forEach((tree, index) => {
-    tree.position.z += treeVelocity;
-    if (tree.position.z > planeMesh.front + 2) {
-      scene.remove(tree);
-      treesRight.splice(index, 1);
+    if (keys.space.pressed) {
+      cubeMesh.velocity.y = 0.15;
     }
-  });
-  if (keys.a.pressed && cubeMesh.left > planeMesh.left) {
-    cubeMesh.velocity.x = -0.2 * cubeScale.X;
-  } else if (keys.d.pressed && cubeMesh.right < planeMesh.right) {
-    cubeMesh.velocity.x = 0.2 * cubeScale.X;
-  } else if (keys.w.pressed) {
-    cubeMesh.velocity.z = -0.2;
-  } else if (keys.s.pressed) {
-    cubeMesh.velocity.z = 0.2;
-  }
-  if (keys.space.pressed) {
-    cubeMesh.velocity.y = 0.15;
-  }
-  cubeMesh.update(planeMesh);
-  renderer.render(scene, camera);
+    cubeMesh.update(planeMesh);
+    renderer.render(scene, camera);
+  }, 15);
 }
 
 document.body.appendChild(renderer.domElement);
