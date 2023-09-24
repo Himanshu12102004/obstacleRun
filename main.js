@@ -5,8 +5,9 @@ let firstGame = true;
 let cubeScale = { X: 1, Y: 1, Z: 1 };
 let planeScale = { X: 1, Y: 1, Z: 1 };
 let treeScale = { X: 1, Y: 1, Z: 1 };
-
+let lastEnemy = null;
 let lastTimestamp;
+let myFront;
 let timerId;
 if (isTouchDevice() && innerWidth < 600) {
   cubeScale.X = 0.5;
@@ -226,7 +227,7 @@ scene.add(light);
 const planeMesh = new Box({
   height: 0.5 * planeScale.Y,
   width: 10 * planeScale.X,
-  depth: 100 * planeScale.Z,
+  depth: 75 * planeScale.Z,
   color: 0x00369a1,
   position: { x: 0, y: -2, z: 0 },
 });
@@ -428,6 +429,7 @@ let treesLeft = [];
 function init() {
   document.querySelector(".overlay").style.display = "none";
   myTime.centi = 0;
+  myFront = 10;
   myTime.second = 0;
   frame = 0;
   lastTimestamp = 0;
@@ -530,25 +532,26 @@ let frameInterval = 1 / frameRate;
 lastTimestamp = 0;
 function animate(timestamp) {
   const deltaTime = (timestamp - lastTimestamp) / 1000;
-  console.log(deltaTime);
   const animationId = requestAnimationFrame(animate);
   lastTimestamp = timestamp;
 
-  console.log("hello");
-  if (frame % 100 === 0) {
+  if (frame % 60 === 0) {
     if (enemyAcc < 0.01) enemyAcc += 0.00018;
     if (treeVelocity < 1) treeVelocity += 0.05;
   }
-  if (enemyAcc >= 0.01) {
-    spawnRate = 15;
+  if (enemyAcc >= 0.005) {
+    spawnRate = 20;
+    console.log(spawnRate);
   }
 
   cubeMesh.velocity.x = 0;
   cubeMesh.velocity.z = 0;
   frame++;
   if (frame % spawnRate == 0) {
-    if (spawnRate > 30) {
+    if (spawnRate > 25) {
       spawnRate -= 2;
+    } else {
+      console.log("hello");
     }
     const enemy = new Box({
       height: 1 * cubeScale.Y,
@@ -560,11 +563,14 @@ function animate(timestamp) {
         x:
           (Math.random() - 0.5) *
           (planeMesh.right - planeMesh.left - 1 * cubeScale.X),
-        y: 4,
-        z: Math.random() * planeMesh.back + 40 * Math.random(),
+        y: 2,
+        z:
+          Math.random() * (planeMesh.front - 20 - planeMesh.back) +
+          planeMesh.back,
       },
       Zacc: true,
     });
+    lastEnemy = enemy;
     enemy.castShadow = true;
     scene.add(enemy);
     enemies.push(enemy);
